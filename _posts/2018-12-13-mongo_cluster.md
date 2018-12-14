@@ -5,7 +5,6 @@ category: MongoDB
 tags: [database, mongo]
 ---
 
-<div class="message">
 A mongodb sharded cluster horizontally scales the data/read/write to multiple nodes. It consists of:    
 **Config servers**: store metadata and configuration settings for the cluster. It must be deployed as a replica set   
 **Mongos**: a query router, providing an interface between client applications and the sharded cluster    
@@ -16,10 +15,9 @@ Here we will setup a dev cluster on 3 nodes:
 node0, IP0, configServer + mongos    
 node1, IP1, shard1    
 node2, IP2, shard2    
-</div>
 
 ## step1 , on RHEL7, install mongod,mongos,mongo shell
-vi /etc/yum.repos.d/mongodb-org-4.0.repo  
+```vi /etc/yum.repos.d/mongodb-org-4.0.repo  
 [mongodb-org-4.0]  
 name=MongoDB Repository  
 baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/4.0/x86_64/  
@@ -29,19 +27,20 @@ gpgkey=https://www.mongodb.org/static/pgp/server-4.0.asc
   
 yum install -y mongodb-org-server-4.0.4 mongodb-org-shell-4.0.4 mongodb-org-tools-4.0.4  
 yum install -y mongodb-org-mongos-4.0.4 # on node0 only   
+```
   
 ## step2, setup configserver on node0  
-vi /etc/mongod.conf  
+```vi /etc/mongod.conf  
 sharding:  
   clusterRole: configsvr   
 replication:  
   replSetName: rsConfig  
 net:  
   bindIp: localhost,IP0  
-  
+```  
 service mongod start    
 mongo  
-rs.initiate(  
+```rs.initiate(  
   {  
     _id: "rsConfig",  
     configsvr: true,  
@@ -50,17 +49,17 @@ rs.initiate(
     ]  
   }  
 )  
-  
+```  
 ## step3, setup shards on node1/2  
-sharding:  
+```sharding:  
    clusterRole: shardsvr  
 replication:  
    replSetName: rs1  
 net:  
    bindIp: localhost,IP1  
-  
+```  
 service mongod start   
-rs.initiate(  
+```rs.initiate(  
   {  
     _id : "rs1",  
     members: [  
@@ -68,14 +67,14 @@ rs.initiate(
     ]  
   }  
 )  
-  
+```  
 ## step4, connect to mongos, add shards to cluster  
 nohup mongos --configdb rsConfig/localhost:27017 --port 27030 &   
 mongo --host localhost --port 27030  
-sh.addShard( "rs1/IP1:27017")  
+```sh.addShard( "rs1/IP1:27017")  
 sh.addShard( "rs2/IP2:27017")  
 db.adminCommand( { listShards : 1 } )  
-  
+```  
 ## Q & A   
 Q1 - first I tried on ubuntu 16.04, when editing mongod.conf in Mobaxterm, it changes first character to 'g'  
 A - change env variable TERM from xterm to linux   
