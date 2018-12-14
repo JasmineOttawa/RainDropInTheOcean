@@ -17,20 +17,22 @@ node1, IP1, shard1
 node2, IP2, shard2    
 
 ## step1 , on RHEL7, install mongod,mongos,mongo shell
-```vi /etc/yum.repos.d/mongodb-org-4.0.repo  
+vi /etc/yum.repos.d/mongodb-org-4.0.repo  
+```
 [mongodb-org-4.0]  
 name=MongoDB Repository  
 baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/4.0/x86_64/  
 gpgcheck=1  
 enabled=1  
 gpgkey=https://www.mongodb.org/static/pgp/server-4.0.asc  
-  
+```
 yum install -y mongodb-org-server-4.0.4 mongodb-org-shell-4.0.4 mongodb-org-tools-4.0.4  
 yum install -y mongodb-org-mongos-4.0.4 # on node0 only   
-```
+
   
 ## step2, setup configserver on node0  
-```vi /etc/mongod.conf  
+vi /etc/mongod.conf  
+```
 sharding:  
   clusterRole: configsvr   
 replication:  
@@ -40,7 +42,8 @@ net:
 ```  
 service mongod start    
 mongo  
-```rs.initiate(  
+```
+rs.initiate(  
   {  
     _id: "rsConfig",  
     configsvr: true,  
@@ -51,7 +54,8 @@ mongo
 )  
 ```  
 ## step3, setup shards on node1/2  
-```sharding:  
+```
+sharding:  
    clusterRole: shardsvr  
 replication:  
    replSetName: rs1  
@@ -59,7 +63,8 @@ net:
    bindIp: localhost,IP1  
 ```  
 service mongod start   
-```rs.initiate(  
+```
+rs.initiate(  
   {  
     _id : "rs1",  
     members: [  
@@ -71,7 +76,8 @@ service mongod start
 ## step4, connect to mongos, add shards to cluster  
 nohup mongos --configdb rsConfig/localhost:27017 --port 27030 &   
 mongo --host localhost --port 27030  
-```sh.addShard( "rs1/IP1:27017")  
+```
+sh.addShard( "rs1/IP1:27017")  
 sh.addShard( "rs2/IP2:27017")  
 db.adminCommand( { listShards : 1 } )  
 ```  
@@ -85,13 +91,7 @@ Dec 12 20:10:08 Node2 systemd[1]: Failed to start MongoDB Database Server.
 per https://github.com/mongodb/mongo/blob/mastear/src/mongo/util/exit_code.h  
 EXIT_NEED_DOWNGRADE = 62, // The current binary version is not appropriate to run on the existing datafiles.  
   
-I took the workaround to recreate DB files since it's new:   
-ls -ld /var/lib/mongo  
-cd /var/lib  
-mv mongo mongo.backup  
-mkdir mongo  
-chown mongod.mongod mongo  
-   
+I took the workaround to recreate /var/lib/mongo since it's new.   
 If there are existing data, how to fix the issue while keeping data?   
 A -   
   
