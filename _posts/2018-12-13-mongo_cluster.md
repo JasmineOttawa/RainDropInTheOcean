@@ -82,20 +82,20 @@ sh.addShard( "rs2/IP2:27017")
 db.adminCommand( { listShards : 1 } )  
 ```  
 ## Q & A   
-Q1 - first I tried on ubuntu 16.04, when editing mongod.conf in Mobaxterm, it changes first character to 'g'  
+### Q1 - On ubuntu 16.04, when editing mongod.conf in Mobaxterm, it changes first character to 'g'  
 A - change env variable TERM from xterm to linux   
   
-Q2 - when starting mongod on 2nd shard, got message  
+### Q2 - when starting mongod on 2nd shard, got message  
 Dec 12 20:10:08 Node2 systemd[1]: mongod.service: control process exited, code=exited status=62  
 Dec 12 20:10:08 Node2 systemd[1]: Failed to start MongoDB Database Server.  
 per https://github.com/mongodb/mongo/blob/mastear/src/mongo/util/exit_code.h  
 EXIT_NEED_DOWNGRADE = 62, // The current binary version is not appropriate to run on the existing datafiles.  
   
 I took the workaround to recreate /var/lib/mongo since it's new.   
-If there are existing data, how to fix the issue while keeping data?   
+If there are existing data, how may I keep data?   
 A -   
   
-Q3 - How to connect to mongos remotely, mongo --host IP0 --port 27030 returns message:   
+### Q3 - How to connect to mongos remotely, mongo --host IP0 --port 27030 returns message:   
      failed: SocketException: Error connecting to IP0:27030 :: caused by :: Connection refused :  
 connect@src/mongo/shell/mongo.js:257:13  
 A -   
