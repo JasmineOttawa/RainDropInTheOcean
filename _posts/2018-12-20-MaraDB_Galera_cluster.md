@@ -88,6 +88,7 @@ MariaDB [(none)]> create database test_db;
 
 ## Q & A   
 ### Q1 - the configuration file is galera.cnf, when I accidently named it as galera.conf, I got following message: 
+```
 [Note] InnoDB:  Percona XtraDB (http://www.percona.com) 5.6.41-84.1 started; log sequence numb
 [Note] InnoDB: Dumping buffer pool(s) not yet started
 [Note] Plugin 'FEEDBACK' is disabled.
@@ -97,15 +98,16 @@ MariaDB [(none)]> create database test_db;
 [Note] /usr/sbin/mysqld: ready for connections.
 mysqld[25633]: Version: '10.1.37-MariaDB-1~xenial'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
 mysqld[25664]: Checking for corrupt, not cleanly closed and upgrade needing tables.
+```
   
-  
-### Q2 - mariadb galera 5.5.24 on RHEL7, galera_new_cluster is not available 
+### Q2 - Start mariadb galera cluster 5.5.24 on RHEL7
 5.5 is a rather old version, following command is not available 
 ```
 [node1]# galera_new_cluster
 -bash: galera_new_cluster: command not found
 ```
 systemd doesn't provide a way to pass command-line arguments to the unit file 
+```
 [node1]# systemctl start mariadb --wsrep-new-cluster
 systemctl: unrecognized option '--wsrep-new-cluster'
 ```
