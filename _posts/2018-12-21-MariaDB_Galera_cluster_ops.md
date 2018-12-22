@@ -77,17 +77,17 @@ MariaDB [keystone]> select count(*) from token where expires < CURRENT_DATE;
 
 Unfortunately, this ibdata1 cannot be shrinked, the only way is to delete this file, rebuild database and import data.  There is a parameter innodb_file_per_table=1, which tells MySQL to store each table, including its indexes, is stored as a separate file, it is be default enabled since 5.6.6. Here we have a rather old version at 5.5.24. 
 
-Following steps tested on 10.1 
+Following steps are tested on 10.1 
 # on node1 
-Take backup1 of db 
-Delete all expired tokens
-Do a mysqldump of all databases, procedures, triggers etc except the mysql and performance_schema databases
-Drop all databases except the above 2 databases
-Stop mariadb
-Delete ibdata1 and ib_log files
-Edit /etc/my.cnf.d/server.cnf to include innodb_file_per_table=1
-Start mariadb
-Restore from dump
+Take backup1 of db   
+Delete all expired tokens  
+Do a mysqldump of all databases, procedures, triggers etc except the mysql and performance_schema databases  
+Drop all databases except the above 2 databases  
+Stop mariadb  
+Delete ibdata1 and ib_log files  
+Edit /etc/my.cnf.d/server.cnf to include innodb_file_per_table=1  
+Start mariadb  
+Restore from dump  
 ```
 #wsrep_on = ON 
 
