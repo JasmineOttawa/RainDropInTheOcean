@@ -153,3 +153,5 @@ or one of the libraries it was linked against is corrupt, improperly built,
 or misconfigured. This error can also be caused by malfunctioning hardware.
 ```
 
+A workaround for Q3/Q4 is to re-initialize the other nodes with empty datafile, then refresh from node0. 
+
