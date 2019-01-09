@@ -35,26 +35,26 @@ To verify that you're deleting the correct repository, type the name of the repo
 Click I understand the consequences, delete this repository   
 
 ### Q3 - origin & remote 
-In Git, "origin" is a shorthand name for the remote repository that a project was originally cloned from. 
-More precisely, it is used instead of that original repository's URL - and thereby makes referencing much easier. 
-Note that origin is by no means a "magical" name, but just a standard convention.
-
-In the following example, the URL parameter to the "clone" command becomes the "origin" for the cloned local repository:
+In Git, "origin" is a shorthand name for the remote repository that a project was originally cloned from.   
+More precisely, it is used instead of that original repository's URL - and thereby makes referencing much easier.   
+Note that origin is by no means a "magical" name, but just a standard convention.  
+  
+In the following example, the URL parameter to the "clone" command becomes the "origin" for the cloned local repository:  
 ```
 git clone https://github.com/user/repo.git
 ```
-In github Desktop, you can see "Fetch Origin" 
+In github Desktop, you can see "Fetch Origin" "Push Origin"     
 
-A remote URL is Git's fancy way of saying "the place where your code is stored." 
-That URL could be your repository on GitHub, or another user's fork, or even on a completely different server. 
-You can only push to two types of URL addresses: 
+A remote URL is Git's fancy way of saying "the place where your code is stored."   
+That URL could be your repository on GitHub, or another user's fork, or even on a completely different server.   
+You can only push to two types of URL addresses:   
 ```
 An HTTPS URL like https://github.com/user/repo.git
 An SSH URL, like git@github.com:user/repo.git
 ```
-Git associates a remote URL with a name, and your default remote is usually called origin.
+Git associates a remote URL with a name, and your default remote is usually called origin.  
 
-You can use the git remote add command to match a remote URL with a name. following statement associates the name origin with the REMOTE_URL:
+You can use the git remote add command to match a remote URL with a name. following statement associates the name origin with the REMOTE_URL:  
 ```
 git remote add origin  <REMOTE_URL> 
 ```
