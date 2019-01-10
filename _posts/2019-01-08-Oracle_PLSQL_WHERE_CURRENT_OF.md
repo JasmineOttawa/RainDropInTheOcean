@@ -5,7 +5,7 @@ category: Oracle
 tags: [Oracle]
 ---
 
-Here is an example os using WHERE CURRENT OF to delete duplicate rows  
+Here is an example of using WHERE CURRENT OF to delete duplicate rows  
 
 identify all the duplicate rows:   
 ```
@@ -49,12 +49,12 @@ actual delete
 
 ## Q & A   
 
-### Q1 -  why we need "where current of"? without this one, it could be replaced by:   
-  update book set status='D' where book_id = one_book_rec.book_id;   
-A - where current of removes the need of a primary/unique key when updating.   
+### Q1 -  why we need "where current of"? without this one, it could be replaced by:  update book set status='D' where book_id = one_book_rec.book_id;   
+    where current of removes the need of a primary/unique key when updating.   
   
 ### Q2 -  what does FOR UPDATE do?   
-A - when we use rowid as the unique key to identify a row, it may changes by operations like :   
+    when we use rowid as the unique key to identify a row, it may changes by operations like :   
     alter table ... shrink space; moving tablespaces or big DMLs.   
     FOR UPDATE locks the row, it ensures ROWID does not change until you finished your transaction.   
     
+### Q3 -  difference between FOR UPDATE & FOR UPDATE OF ... 
