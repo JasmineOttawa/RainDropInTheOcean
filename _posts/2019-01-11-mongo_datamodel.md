@@ -28,27 +28,27 @@ mongoDB povide multi-document transactions for replica sets.
  dbref is used when referencing documents in the different collections.  
 ##### example of a manual reference 
 Document structure for a Class: 
-{%
+```
 {
  name: '1A',
  start_date: '2019-09-01',
  description: 'grade 1 A - EFI',
  students: [?] 
 }
-%}
+```
 
 Document structure for a Student: 
-{%
+```
 {
  firstName: "Yellow",
  lastName:  "Little",
  birthday: "2012-01-01",
  hobbies: "hockey, swimming, reading"
 }
-%}
+```
 
 We put these two separate document structures in the same collection "class".
-{%
+```
 db.class.save ({
  firstName: "Yellow",
  lastName:  "L",
@@ -76,10 +76,10 @@ rs1:PRIMARY> db.class.find().pretty()
         "birthday" : "2012-02-01",
         "hobbies" : "hiking, dance"
 }
-%}
+```
 
 Reference these 2 students in class 1A 
-{%
+```
 db.class.save ({
  name: '1A',
  start_date: '2019-09-01',
@@ -89,7 +89,7 @@ db.class.save ({
       ObjectId("5c38ca343ec9b7b9e4144816")
    ] 
 })
-%}
+```
 
 #### example of dbref 
 There are three important fields which should be used in order to implement DBRefs relationship as follows.  
