@@ -96,7 +96,7 @@ systemctl start docker.socket
 ```
 Now got message: docker.socket control process exited, code=exited status=216
 
-Reviewing docker,socket, note that it tries to set the ownership of the docker.socket to root:docker
+Reviewing docker.socket, note that it tries to set the ownership of the docker.socket to root:docker
 check if group docker exists: 
 ```
 [root@node1 system]# cat /etc/group | grep docker
@@ -120,12 +120,13 @@ systemd will then create target socket and pass it to the Docker daemon to use.
 
   
 ### Q2 -  Since one of its key feature is faster init process, how fast it is? 
+```
 [root@node1 system]# systemd-analyze blame
          33.285s httpd.service
          15.064s unbound-anchor.service
           7.890s openstack-nova-api.service
           5.236s network.service
-  
+```
 Here is the detail reference for systemd   
 https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/system_administrators_guide/sect-managing_services_with_systemd-unit_files
 

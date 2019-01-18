@@ -5,23 +5,22 @@ category: MongoDB
 tags: [database, mongo]
 ---
 
-The key challenge in data modeling is the needs of applications, the database engine performance, and data retrieval patterns.     
+The key challenge in data modeling is the needs of applications, the database engine performance, and data retrieval patterns.
 Mongo supports felxible schema, the documents in a single collection do not need to have the same set of fields and the data type for a field can differ across documents.   
 
 #### two types of data models: embedded data vs. references
 * embedded data   
-MongoDB allows related data to be embedded within a single document.  
+MongoDB allows related data to be embedded within a single document.
 These denormalized data models allow applications to retrieve and manipulate related data in a single database operation.  
 * reference   
-references store the relationships between data by including links or references from one document to another.   
+references store the relationships between data by including links or references from one document to another.
 application can resolve these references to access the related data.   
 
 #### atomicity of write operations: single vs. multiple atomicity
 * single document atomicity   
 A write operation is atomic on the level of a single document, even if the operation modifies multiple embedded documents within a single document.   
 * multi-docoument transactions   
-Starting in version 4.0, for situations that require atomicity for updates to multiple documents or consistency between read to multiple documents,   
-mongoDB povide multi-document transactions for replica sets.   
+Starting in version 4.0, for situations that require atomicity for updates to multiple documents or consistency between read to multiple documents, mongoDB povide multi-document transactions for replica sets.   
 
 #### two types of references, manual references vs. dbref 
  manual reference is used when referencing documents in the same collection   
@@ -170,8 +169,7 @@ rs1:PRIMARY> db.class.find().pretty()
 ```
   
 ### Q1 - save vs. insert 
-save is a wrapper for update and insert. Functionally, save and insert are very similar, especially if no _id value is passed.   
-However, if an _id key is passed, save() will update the document, while insert() will throw a duplicate key error.  
+save is a wrapper for update and insert. Functionally, save and insert are very similar, especially if no _id value is passed. However, if an _id key is passed, save() will update the document, while insert() will throw a duplicate key error.  
   
 ## References
 official document: https://docs.mongodb.com/manual/core/data-modeling-introduction/   

@@ -31,12 +31,12 @@ On GitHub, navigate to the main page of the repository.
 Under your repository name, click  Settings.  
 Under Danger Zone, click Delete this repository.  
 Read the warnings.  
-To verify that you're deleting the correct repository, type the name of the repository you want to delete.  
+To verify that you're deleting the correct repository, type the name of the repository you want to delete.
 Click I understand the consequences, delete this repository   
 
 ### Q3 - origin & remote 
-In Git, "origin" is a shorthand name for the remote repository that a project was originally cloned from.   
-More precisely, it is used instead of that original repository's URL - and thereby makes referencing much easier.   
+In Git, "origin" is a shorthand name for the remote repository that a project was originally cloned from.
+More precisely, it is used instead of that original repository's URL - and thereby makes referencing much easier.
 Note that origin is by no means a "magical" name, but just a standard convention.  
   
 In the following example, the URL parameter to the "clone" command becomes the "origin" for the cloned local repository:  
@@ -45,9 +45,9 @@ git clone https://github.com/user/repo.git
 ```
 In github Desktop, you can see "Fetch Origin" "Push Origin"     
 
-A remote URL is Git's fancy way of saying "the place where your code is stored."   
-That URL could be your repository on GitHub, or another user's fork, or even on a completely different server.   
-You can only push to two types of URL addresses:   
+A remote URL is Git's fancy way of saying "the place where your code is stored."
+That URL could be your repository on GitHub, or another user's fork, or even on a completely different server.
+You can only push to two types of URL addresses:
 ```
 An HTTPS URL like https://github.com/user/repo.git
 An SSH URL, like git@github.com:user/repo.git
