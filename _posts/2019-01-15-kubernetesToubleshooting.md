@@ -37,3 +37,13 @@ node1-s2q5j                         0m           7Mi
 NAME                                CPU(cores)   MEMORY(bytes)
 ```
 ### 
+
+
+
+
+
+
+
+
+
+
