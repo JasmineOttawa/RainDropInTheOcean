@@ -293,7 +293,7 @@ export OS_IMAGE_API_VERSION=2
 [root@controller rocky]# . admin-openrc  
 [root@controller rocky]# openstack token issue
 
-#3, image service -- glance   
+# 3, image service -- glance   
 3.1) prerequisites   
 ```
 mysql -u root -p
@@ -390,7 +390,7 @@ auth_uri = http://management_IP11:5000, this uri is what's in the config file or
 wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img  
 openstack image create "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --public  
 
-#4, compute service   
+# 4, compute service   
 1) install controller node     
 4.1.1) prerequisites     
 ```
@@ -653,7 +653,7 @@ openstack catalog list    # list API endpoints in the identity service to verify
 openstack image list
 nova-status upgrade check  # check the cells and placement API are working successfully 
 ```
-#5, networking service    
+# 5, networking service    
 5.1) on controller node   
 ```
 mysql -u root -p 
@@ -762,7 +762,7 @@ Note, After you configure the ML2 plug-in, removing values in the type_drivers o
 
 5.3) verify 
 
-#6, dashboard 
+# 6, dashboard 
 
 
 
