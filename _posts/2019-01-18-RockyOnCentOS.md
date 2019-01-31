@@ -290,10 +290,10 @@ export OS_AUTH_URL=http://management_IP11:5000/v3
 export OS_IDENTITY_API_VERSION=3
 export OS_IMAGE_API_VERSION=2
 ```
-[root@controller rocky]# . admin-openrc
+[root@controller rocky]# . admin-openrc  
 [root@controller rocky]# openstack token issue
 
-#3, image service -- glance 
+#3, image service -- glance   
 3.1) prerequisites   
 ```
 mysql -u root -p
@@ -365,11 +365,12 @@ flavor = keystone
 su -s /bin/sh -c "glance-manage db_sync" glance
 ```
 
-3.3) finalize installation  
-systemctl enable openstack-glance-api.service  openstack-glance-registry.service
-systemctl start openstack-glance-api.service openstack-glance-registry.service
+3.3) finalize installation    
+systemctl enable openstack-glance-api.service  openstack-glance-registry.service  
+systemctl start openstack-glance-api.service openstack-glance-registry.service   
 
 ### message3, glance-api service failed 
+```
 [root@controller glance]# systemctl status openstack-glance-api.service
 ● openstack-glance-api.service - OpenStack Image Service (code-named Glance) API server
    Loaded: loaded (/usr/lib/systemd/system/openstack-glance-api.service; enabled; vendor preset: disabled)
@@ -377,21 +378,21 @@ systemctl start openstack-glance-api.service openstack-glance-registry.service
   Process: 25730 ExecStart=/usr/bin/glance-api (code=exited, status=99)
  Main PID: 25730 (code=exited, status=99)
 
-journalctl -xn    
+journalctl -xn      # display the most recent 10 entries of systemd   
 it turned out to be config file error     
 it's supposed to be   
 auth_url = http://management_IP11:5000  
 instead of     
 auth_uri = http://management_IP11:5000, this uri is what's in the config file originally, need change to url  
-
+```
 
 3.4) verification   
-wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
-openstack image create "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --public
+wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img  
+openstack image create "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --public  
 
-#4, compute service 
-1) install controller node   
-4.1.1) prerequisites   
+#4, compute service   
+1) install controller node     
+4.1.1) prerequisites     
 ```
 mysql -u root -p
 CREATE DATABASE nova_api;
@@ -652,8 +653,8 @@ openstack catalog list    # list API endpoints in the identity service to verify
 openstack image list
 nova-status upgrade check  # check the cells and placement API are working successfully 
 ```
-#5, networking service 
-5.1) on controller node 
+#5, networking service    
+5.1) on controller node   
 ```
 mysql -u root -p 
 CREATE DATABASE neutron;
