@@ -622,7 +622,7 @@ auth_url = http://controller:5000/v3
 username = placement
 password = PLACEMENT_PASS
 ```
-3.2) finalize installation  
+4.2.2) finalize installation  
 Determine whether your computr node supports hardware acceleration for VM: 
 ```
 egrep -c '(vmx|svm)' /proc/cpuinfo
@@ -639,13 +639,13 @@ virt_type = qemu
 systemctl enable libvirtd.service openstack-nova-compute.service
 systemctl start libvirtd.service openstack-nova-compute.service
 ```
-3.3) add the compute node to the cell database 
+4.2.3) add the compute node to the cell database 
 ```
 . admin-openrc
 openstack compute service list --service nova-compute
 su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
 ```
-4) verify operation 
+4.3) verify operation 
 ```
 . admin-openrc
 openstack compute service list
