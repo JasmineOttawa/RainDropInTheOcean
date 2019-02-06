@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Oracle - SHMALL 
+title: Oracle - expdp hangs in Oracle12c
 category: Oracle
 tags: [Oracle]
 ---
