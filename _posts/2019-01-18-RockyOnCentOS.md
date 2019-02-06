@@ -572,13 +572,13 @@ This configuration uses the Quick EMUlator (QEMU) hypervisor with the kernel-bas
 yum install openstack-nova-compute
 cd /etc/nova 
 cp nova.conf nova.conf.bak 
-vi /etc/nova/nova.conf
+vi nova.conf
 [DEFAULT]
 # ...
 enabled_apis = osapi_compute,metadata
 [DEFAULT]
 # ...
-transport_url = rabbit://openstack:RABBIT_PASS@controller
+transport_url = rabbit://openstack:kos2000@controller
 [api]
 # ...
 auth_strategy = keystone
@@ -592,11 +592,11 @@ project_domain_name = default
 user_domain_name = default
 project_name = service
 username = nova
-password = NOVA_PASS
+password = nova
 [DEFAULT]
-# ...
-my_ip = MANAGEMENT_INTERFACE_IP_ADDRESS
-# ...
+# this is the management_interface IP of compute node 
+my_ip = 192.168.151.116  
+# By default, Compute uses an internal firewall service. Since Networking includes a firewall service, you must disable the Compute firewall service by using the nova.virt.firewall.NoopFirewallDriver firewall driver.
 use_neutron = true
 firewall_driver = nova.virt.firewall.NoopFirewallDriver
 [vnc]
@@ -620,12 +620,14 @@ auth_type = password
 user_domain_name = Default
 auth_url = http://controller:5000/v3
 username = placement
-password = PLACEMENT_PASS
+password = placement
 ```
 4.2.2) finalize installation  
 Determine whether your computr node supports hardware acceleration for VM: 
 ```
-egrep -c '(vmx|svm)' /proc/cpuinfo
+[root@kos2001 nova]# egrep -c '(vmx|svm)' /proc/cpuinfo
+48
+
 ```
 
 If this command returns a value of one or greater, your compute node supports hardware acceleration which typically requires no additional configuration.  
@@ -638,7 +640,13 @@ virt_type = qemu
 ```
 systemctl enable libvirtd.service openstack-nova-compute.service
 systemctl start libvirtd.service openstack-nova-compute.service
+systemctl status libvirtd.service openstack-nova-compute.service
 ```
+systemctl start libvirtd.service openstack-nova-compute.service hangs, /var/log/nova/nova-compute.log shows message:  
+Timed out waiting for nova-conductor.  Is it running? Or did this service start before nova-conductor? 
+
+
+
 4.2.3) add the compute node to the cell database 
 ```
 . admin-openrc
