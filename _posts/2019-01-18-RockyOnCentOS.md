@@ -565,7 +565,7 @@ server_listen=#my_ip
 ```
 change it to server_listen=$my_ip , now nova-api service up 
 
-4.2) install compute node 
+4.2) install compute node    
 This configuration uses the Quick EMUlator (QEMU) hypervisor with the kernel-based VM (KVM) extension on compute nodes that support hardware acceleration for VMs.
 4.2.1) install and configure components 
 ```
@@ -627,7 +627,6 @@ Determine whether your computr node supports hardware acceleration for VM:
 ```
 [root@compute nova]# egrep -c '(vmx|svm)' /proc/cpuinfo
 48
-
 ```
 
 If this command returns a value of one or greater, your compute node supports hardware acceleration which typically requires no additional configuration.  
@@ -636,8 +635,7 @@ If this command returns a value of zero, your compute node does not support hard
 [libvirt]
 # ...
 virt_type = qemu
-```
-```
+
 systemctl enable libvirtd.service openstack-nova-compute.service
 systemctl start libvirtd.service openstack-nova-compute.service
 systemctl status libvirtd.service openstack-nova-compute.service
@@ -646,21 +644,18 @@ systemctl start libvirtd.service openstack-nova-compute.service hangs, /var/log/
 ```
 Timed out waiting for nova-conductor.  Is it running? Or did this service start before nova-conductor? 
 ```
-
 Review config by: 
 ```
 grep ^[^#[] nova.conf
 ```
-
 Notice that there is a transport_url typo on master node, correct this one, restart compute servive on master node.     
 Now compute service running fine on compute node. 
 
-4.2.3) add the compute node to the cell database 
+4.2.3) add the compute node to the cell database     
 On controller node:   
 ```
 . admin-openrc
 openstack compute service list --service nova-compute
-```
 An unexpected error prevented the server from fulfilling your request. (HTTP 500) (Request-ID: req-19037f15-bd4b-4404-987a-d55eeb6cbe57)
 ```
 
@@ -686,8 +681,8 @@ MariaDB [(none)]> show global status like 'Max_used_connections';
 +----------------------+-------+
 1 row in set (0.00 sec)
 ```
-1) Note that in /etc/my.cnf.d/openstack.cnf, we set: max_connections = 4096     
-How come the actual max_connections is 214 here? 
+1) Note that in /etc/my.cnf.d/openstack.cnf, we set: max_connections = 4096       
+How come the actual max_connections is 214 here?   
 In CentOS 7, There is limit for system resources in systemd. to change resource limit for a specific service:   
 ```
 # find service unit 
