@@ -783,27 +783,27 @@ yum install openstack-neutron openstack-neutron-ml2 openstack-neutron-linuxbridg
 ```
 
 #### 5.1.1) configure the server component  
-
+```
 cd /etc/neutron
 cp neutron.conf neutron.conf.bak 
 vi neutron.conf 
 [database]
-# ...
+#...
 connection = mysql+pymysql://neutron:NEUTRON_DBPASS@controller/neutron
 [DEFAULT]
-# enable the Modular Layer 2 (ML2) plug-in, router service, and overlapping IP addresses:
+#enable the Modular Layer 2 (ML2) plug-in, router service, and overlapping IP addresses:
 core_plugin = ml2
 service_plugins = router
 allow_overlapping_ips = true
 [DEFAULT]
-# configure RabbitMQ message queue access:
+#configure RabbitMQ message queue access:
 transport_url = rabbit://openstack:RABBIT_PASS@controller
 [DEFAULT]
-# ...
+#...
 auth_strategy = keystone
 
 [keystone_authtoken]
-# configure Identity service access
+#configure Identity service access
 www_authenticate_uri = http://controller:5000
 auth_url = http://controller:5000
 memcached_servers = controller:11211
@@ -814,12 +814,12 @@ project_name = service
 username = neutron
 password = NEUTRON_PASS
 [DEFAULT]
-# ...
+#...
 notify_nova_on_port_status_changes = true
 notify_nova_on_port_data_changes = true
 
 [nova]
-# ...
+#...
 auth_url = http://controller:5000
 auth_type = password
 project_domain_name = default
@@ -829,7 +829,7 @@ project_name = service
 username = nova
 password = NOVA_PASS
 [oslo_concurrency]
-# ...
+#...
 lock_path = /var/lib/neutron/tmp
 ```
 
