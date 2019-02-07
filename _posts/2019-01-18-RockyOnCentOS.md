@@ -625,7 +625,7 @@ password = placement
 4.2.2) finalize installation  
 Determine whether your computr node supports hardware acceleration for VM: 
 ```
-[root@kos2001 nova]# egrep -c '(vmx|svm)' /proc/cpuinfo
+[root@compute nova]# egrep -c '(vmx|svm)' /proc/cpuinfo
 48
 
 ```
@@ -643,16 +643,115 @@ systemctl start libvirtd.service openstack-nova-compute.service
 systemctl status libvirtd.service openstack-nova-compute.service
 ```
 systemctl start libvirtd.service openstack-nova-compute.service hangs, /var/log/nova/nova-compute.log shows message:  
+```
 Timed out waiting for nova-conductor.  Is it running? Or did this service start before nova-conductor? 
+```
 
+Review config by: 
+```
+grep ^[^#[] nova.conf
+```
 
+Notice that there is a transport_url typo on master node, correct this one, restart compute servive on master node.     
+Now compute service running fine on compute node. 
 
 4.2.3) add the compute node to the cell database 
+On controller node:   
 ```
 . admin-openrc
 openstack compute service list --service nova-compute
-su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
 ```
+An unexpected error prevented the server from fulfilling your request. (HTTP 500) (Request-ID: req-19037f15-bd4b-4404-987a-d55eeb6cbe57)
+```
+
+/var/log/nova/nova-scheduler.log shows:  
+```
+ERROR oslo_messaging.rpc.server [req-da6ea36d-a91d-465a-9307-336b7a77cff0 - - - - -] Exception during message handling: OperationalError: (pymysql.err.OperationalError) (1040, u'Too many connections') (Background on this error at: http://sqlalche.me/e/e3q8)
+```
+
+check how many connections currently 
+```
+MariaDB [(none)]> show variables like 'max_connections';
++-----------------+-------+
+| Variable_name   | Value |
++-----------------+-------+
+| max_connections | 214   |
++-----------------+-------+
+1 row in set (0.00 sec)
+MariaDB [(none)]> show global status like 'Max_used_connections';
++----------------------+-------+
+| Variable_name        | Value |
++----------------------+-------+
+| Max_used_connections | 215   |
++----------------------+-------+
+1 row in set (0.00 sec)
+```
+1) Note that in /etc/my.cnf.d/openstack.cnf, we set: max_connections = 4096     
+How come the actual max_connections is 214 here? 
+In CentOS 7, There is limit for system resources in systemd. to change resource limit for a specific service:   
+```
+# find service unit 
+systemctl list-unit-files | grep -E 'mysql|mariadb'
+mariadb.service enabled
+# change resource limit 
+systemctl edit mariadb.service
+[Service]
+LimitNOFILE=4096
+# restart service 
+systemctl restart  mariadb.service
+
+MariaDB [(none)]> show variables like 'open_files_limit';
++------------------+-------+
+| Variable_name    | Value |
++------------------+-------+
+| open_files_limit | 4096  |
++------------------+-------+
+1 row in set (0.00 sec)
+
+MariaDB [(none)]>  show variables like 'max_connections';
++-----------------+-------+
+| Variable_name   | Value |
++-----------------+-------+
+| max_connections | 3286  |
++-----------------+-------+
+1 row in set (0.00 sec)
+```
+
+2) MySQL reserves a connection for super user, so the actual maximum connections is max_connections+1.     
+3) after restart mariadb, we need to restart all service dependant on mariadb   
+```
+# identity 
+systemctl restart httpd.service
+# image 
+systemctl restart openstack-glance-api.service 
+systemctl restart openstack-glance-registry.service
+# compute 
+systemctl restart openstack-nova-api.service 
+systemctl restart openstack-nova-scheduler.service 
+systemctl restart openstack-nova-conductor.service 
+systemctl restart openstack-nova-novncproxy.service
+```
+
+Now the expected result: 
+```
+[root@controller ~]# openstack compute service list --service nova-compute
++----+--------------+----------------------------+------+---------+-------+----------------------------+
+| ID | Binary       | Host                       | Zone | Status  | State | Updated At                 |
++----+--------------+----------------------------+------+---------+-------+----------------------------+
+| 19 | nova-compute | kos2001.bridgewatersys.com | nova | enabled | up    | 2019-02-06T16:13:55.000000 |
++----+--------------+----------------------------+------+---------+-------+----------------------------+
+```
+Discover compute hosts: 
+```
+[root@controller ~]# su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
+Found 2 cell mappings.
+Skipping cell0 since it does not contain hosts.
+Getting computes from cell 'cell1': bcb4f5f8-36e3-49e5-aa74-cf8023a90f36
+Checking host mapping for compute host 'kos2001.bridgewatersys.com': cf34e6db-e180-457e-8f38-0fe6b11ff7e3
+Creating host mapping for compute host 'kos2001.bridgewatersys.com': cf34e6db-e180-457e-8f38-0fe6b11ff7e3
+Found 1 unmapped computes in cell: bcb4f5f8-36e3-49e5-aa74-cf8023a90f36
+```
+
 4.3) verify operation 
 ```
 . admin-openrc
@@ -678,13 +777,18 @@ openstack endpoint create --region RegionOne network internal http://controller:
 openstack endpoint create --region RegionOne network admin http://controller:9696
 ```
 
-You can deploy the Networking service using one of two architectures represented by options 1 and 2.  
-Option 1 deploys the simplest possible architecture that only supports attaching instances to provider (external) networks. No self-service (private) networks, routers, or floating IP addresses. Only the admin or other privileged user can manage provider networks.  
-Option 2 augments option 1 with layer-3 services that support attaching instances to self-service networks. The demo or other unprivileged user can manage self-service networks including routers that provide connectivity between self-service and provider networks. Option 2 also supports attaching instances to provider networks. 
+You can deploy the Networking service using one of two architectures represented by options 1 and 2.    
+Option 1 deploys the simplest possible architecture that only supports attaching instances to provider (external) networks. No self-service (private) networks, routers, or floating IP addresses. Only the admin or other privileged user can manage provider networks.    
+Option 2 augments option 1 with layer-3 services that support attaching instances to self-service networks. The demo or other unprivileged user can manage self-service networks including routers that provide connectivity between self-service and provider networks. Option 2 also supports attaching instances to provider networks.   
 
-choose option2, Self-service networks 
+choose option2, Self-service networks   
+Install and configure the networking components on the controller node:  
 ```
 yum install openstack-neutron openstack-neutron-ml2 openstack-neutron-linuxbridge ebtables
+```
+
+#### 5.1.1) configure the server component  
+
 cd /etc/neutron
 cp neutron.conf neutron.conf.bak 
 vi neutron.conf 
@@ -692,19 +796,19 @@ vi neutron.conf
 # ...
 connection = mysql+pymysql://neutron:NEUTRON_DBPASS@controller/neutron
 [DEFAULT]
-# ...
+# enable the Modular Layer 2 (ML2) plug-in, router service, and overlapping IP addresses:
 core_plugin = ml2
 service_plugins = router
 allow_overlapping_ips = true
 [DEFAULT]
-# ...
+# configure RabbitMQ message queue access:
 transport_url = rabbit://openstack:RABBIT_PASS@controller
 [DEFAULT]
 # ...
 auth_strategy = keystone
 
 [keystone_authtoken]
-# ...
+# configure Identity service access
 www_authenticate_uri = http://controller:5000
 auth_url = http://controller:5000
 memcached_servers = controller:11211
@@ -734,7 +838,7 @@ password = NOVA_PASS
 lock_path = /var/lib/neutron/tmp
 ```
 
-#### Configure the Modular Layer 2 (ML2) plug-in
+#### 5.1.2) Configure the Modular Layer 2 (ML2) plug-in
 ```
 cd /etc/neutron/plugins/ml2
 cp ml2_conf.ini ml2_conf.ini.bak 
@@ -760,11 +864,11 @@ enable_ipset = true
 ```
 Note, After you configure the ML2 plug-in, removing values in the type_drivers option can lead to database inconsistency
 
-#### Configure the Linux bridge agent
+#### 5.1.3) Configure the Linux bridge agent
 
-#### Configure the layer-3 agent
+#### 5.1.4) Configure the layer-3 agent
 
-#### Configure the DHCP agent
+#### 5.1.5) Configure the DHCP agent
 
 5.2) on compute node 
 
