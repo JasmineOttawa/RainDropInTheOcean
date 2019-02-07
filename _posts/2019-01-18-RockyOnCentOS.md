@@ -756,7 +756,7 @@ openstack image list
 nova-status upgrade check  # check the cells and placement API are working successfully 
 ```
 # 5, networking service    
-5.1) on controller node   
+ on controller node     
 ```
 mysql -u root -p 
 CREATE DATABASE neutron;
@@ -776,6 +776,7 @@ You can deploy the Networking service using one of two architectures represented
 Option 1 deploys the simplest possible architecture that only supports attaching instances to provider (external) networks. No self-service (private) networks, routers, or floating IP addresses. Only the admin or other privileged user can manage provider networks.    
 Option 2 augments option 1 with layer-3 services that support attaching instances to self-service networks. The demo or other unprivileged user can manage self-service networks including routers that provide connectivity between self-service and provider networks. Option 2 also supports attaching instances to provider networks.   
 
+### 5.1) Configure networking options
 choose option2, Self-service networks   
 Install and configure the networking components on the controller node:  
 ```
@@ -860,17 +861,220 @@ enable_ipset = true
 Note, After you configure the ML2 plug-in, removing values in the type_drivers option can lead to database inconsistency
 
 #### 5.1.3) Configure the Linux bridge agent
+The Linux bridge agent builds layer-2 (bridging and switching) virtual networking infrastructure for instances and handles security groups.  
+```
+cd  /etc/neutron/plugins/ml2
+cp linuxbridge_agent.ini linuxbridge_agent.ini.bak 
+vi linuxbridge_agent.ini
+[linux_bridge]
+#map the provider virtual network to the provider physical network interface
+physical_interface_mappings = provider:PROVIDER_INTERFACE_NAME
+[vxlan]
+#enable VXLAN overlay networks, configure the IP address of the physical network interface that handles overlay networks, and enable layer-2 population
+enable_vxlan = true
+local_ip = OVERLAY_INTERFACE_IP_ADDRESS
+l2_population = true
+[securitygroup]
+# enable security groups and configure the Linux bridge iptables firewall driver   
+enable_security_group = true
+firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+
+#Ensure your Linux operating system kernel supports network bridge filters by verifying all the following sysctl values are set to 1. these values are not there until you modprobe br_netfilter 
+net.bridge.bridge-nf-call-iptables
+net.bridge.bridge-nf-call-ip6tables
+#To enable networking bridge support, typically the br_netfilter kernel module needs to be loaded
+[root@controller etc]# modprobe br_netfilter
+[root@controller etc]# sysctl -a > sysctl.log
+[root@controller etc]# grep bridge-nf-call sysctl.log
+net.bridge.bridge-nf-call-arptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+```
 
 #### 5.1.4) Configure the layer-3 agent
-
+The Layer-3 (L3) agent provides routing and NAT services for self-service virtual networks.  
+```
+cd /etc/neutron/
+cp l3_agent.ini  l3_agent.ini.bak 
+vi l3_agent.ini  
+[DEFAULT]
+# onfigure the Linux bridge interface driver and external network bridge:
+interface_driver = linuxbridge
+```
 #### 5.1.5) Configure the DHCP agent
+The DHCP agent provides DHCP services for virtual networks.   
+```
+cd /etc/neutron/
+cp dhcp_agent.ini dhcp_agent.ini.bak 
+vi dhcp_agent.ini  
+[DEFAULT]
+#configure the Linux bridge interface driver, Dnsmasq DHCP driver, and enable isolated metadata so instances on provider networks can access metadata over the network
+interface_driver = linuxbridge
+dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
+enable_isolated_metadata = true
+```
+
+Now th choice of option2 - self-service networks is done. back to configure network on controller node 
+
+### 5.2) Configure the metadata agent
+The metadata agent provides configuration information such as credentials to instances.   
+```
+cd /etc/neutron/
+cp metadata_agent.ini  metadata_agent.ini.bak 
+vi metadata_agent.ini 
+[DEFAULT]
+# configure the metadata host and shared secret
+nova_metadata_host = controller
+metadata_proxy_shared_secret = METADATA_SECRET
+```
+### 5.3) Configure the Compute service to use the Networking service 
+```
+vi /etc/nova/nova.conf
+[neutron]
+#configure access parameters, enable the metadata proxy, and configure the secret
+url = http://controller:9696
+auth_url = http://controller:5000
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
+project_name = service
+username = neutron
+password = NEUTRON_PASS
+service_metadata_proxy = true
+metadata_proxy_shared_secret = METADATA_SECRET
+``` 
+### 5.4) Finalize installation
+create soft link 
+```
+[root@controller nova]# ls -ltr /etc/neutron/plugin.ini
+ls: cannot access /etc/neutron/plugin.ini: No such file or directory
+[root@controller nova]# ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
+[root@controller nova]# ls -ltr /etc/neutron/plugin.ini
+lrwxrwxrwx 1 root root 37 Feb  6 22:37 /etc/neutron/plugin.ini -> /etc/neutron/plugins/ml2/ml2_conf.ini
+```
+
+Populate the database:
+```
+su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf  --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
+......
+sqlalchemy.exc.ArgumentError: Could not parse rfc1738 URL from string ''
+
+Add the missing DB connection in /etc/neutron/neutron.conf , retry fine 
+```
+
+Restart the Compute API service:
+```
+systemctl restart openstack-nova-api.service
+systemctl status openstack-nova-api.service
+```
+
+Start the Networking services and configure them to start when the system boots.For both networking options:
+```
+systemctl enable neutron-server.service neutron-linuxbridge-agent.service neutron-dhcp-agent.service  neutron-metadata-agent.service
+systemctl start neutron-server.service neutron-linuxbridge-agent.service neutron-dhcp-agent.service  neutron-metadata-agent.service
+systemctl status neutron-server.service 
+systemctl status neutron-linuxbridge-agent.service 
+systemctl status neutron-dhcp-agent.service  
+systemctl status neutron-metadata-agent.service
+```
+
+For networking option 2, also enable and start the layer-3 service:
+```
+systemctl enable neutron-l3-agent.service
+systemctl start neutron-l3-agent.service
+systemctl status neutron-l3-agent.service
+```
 
 5.2) on compute node 
+Install components 
+```
+yum install openstack-neutron-linuxbridge ebtables ipset
+```
+
+Configure the common component, which includes authentication mechanism, message queue, and plug-in
+```
+vi /etc/neutron/neutron.conf
+#In the [database] section, comment out any connection options because compute nodes do not directly access the database.
+[DEFAULT]
+# ...
+transport_url = rabbit://openstack:RABBIT_PASS@controller
+[DEFAULT]
+# ...
+auth_strategy = keystone
+
+[keystone_authtoken]
+# ...
+www_authenticate_uri = http://controller:5000
+auth_url = http://controller:5000
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = neutron
+password = NEUTRON_PASS
+[oslo_concurrency]
+# ...
+lock_path = /var/lib/neutron/tmp
+```
+
+configure network options 
+```
+#Configure the Linux bridge agent
+vi  /etc/neutron/plugins/ml2/linuxbridge_agent.ini 
+[linux_bridge]
+physical_interface_mappings = provider:PROVIDER_INTERFACE_NAME
+[vxlan]
+enable_vxlan = true
+local_ip = OVERLAY_INTERFACE_IP_ADDRESS
+l2_population = true
+[securitygroup]
+# ...
+enable_security_group = true
+firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+
+modprobe br_netfilter
+sysctl -a > sysctl.log
+grep bridge-nf-call sysctl.log
+```
+
+Configure the Compute service to use the Networking service
+```
+vi /etc/nova/nova.conf 
+[neutron]
+# ...
+url = http://controller:9696
+auth_url = http://controller:5000
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
+project_name = service
+username = neutron
+password = NEUTRON_PASS
+```
+
+Finalize installation 
+```
+systemctl restart openstack-nova-compute.service
+systemctl enable neutron-linuxbridge-agent.service
+systemctl start neutron-linuxbridge-agent.service
+systemctl status neutron-linuxbridge-agent.service
+```
 
 5.3) verify 
+```
+. admin-openrc
+openstack extension list --network
+openstack network agent list
+```
 
 # 6, dashboard 
+6.1) install & configure   
+https://docs.openstack.org/horizon/rocky/install/install-rdo.html
 
+6.2) verify 
 
 
 
