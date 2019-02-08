@@ -199,13 +199,12 @@ export OS_IDENTITY_API_VERSION=3
 export OS_IMAGE_API_VERSION=2
 ```
 
-Create a domain, projects, users, and roles 
-The defaul domain already exists from the keystone-manage bootstrap, you can create a new domain by: 
+Create a domain, projects, users, and roles.   
+The defaul domain already exists from the keystone-manage bootstrap, you can create a new domain by:   
+```
 [root@controller ~]# openstack domain create --description "Domain Ottawa" example
 An unexpected error prevented the server from fulfilling your request. (HTTP 500) (Request-ID: req-d68c8a5b-7e5f-4ddb-a514-0683f4ab41a0)
--- uses a service project that contains a unique user for each service that you add to your environment
-[root@controller ~]# openstack project create --domain default --description "Service Project" service
-An unexpected error prevented the server from fulfilling your request. (HTTP 500) (Request-ID: req-10978cfd-b05b-466f-9f6e-a9c60786f969)
+```
 
 ### message1: SELinux policy enabled
 If not diable firewall and disable Seselinux at the beginning, will see this message:   
@@ -366,8 +365,10 @@ su -s /bin/sh -c "glance-manage db_sync" glance
 ```
 
 3.3) finalize installation    
+```
 systemctl enable openstack-glance-api.service  openstack-glance-registry.service  
 systemctl start openstack-glance-api.service openstack-glance-registry.service   
+```
 
 ### message3, glance-api service failed 
 ```
@@ -566,7 +567,7 @@ server_listen=#my_ip
 change it to server_listen=$my_ip , now nova-api service up 
 
 4.2) install compute node    
-This configuration uses the Quick EMUlator (QEMU) hypervisor with the kernel-based VM (KVM) extension on compute nodes that support hardware acceleration for VMs.
+This configuration uses the Quick EMUlator (QEMU) hypervisor with the kernel-based VM (KVM) extension on compute nodes that support hardware acceleration for VMs.   
 4.2.1) install and configure components 
 ```
 yum install openstack-nova-compute
@@ -640,6 +641,8 @@ systemctl enable libvirtd.service openstack-nova-compute.service
 systemctl start libvirtd.service openstack-nova-compute.service
 systemctl status libvirtd.service openstack-nova-compute.service
 ```
+
+### message5, Timed out waiting for nova-conductor
 systemctl start libvirtd.service openstack-nova-compute.service hangs, /var/log/nova/nova-compute.log shows message:  
 ```
 Timed out waiting for nova-conductor.  Is it running? Or did this service start before nova-conductor? 
@@ -659,6 +662,7 @@ openstack compute service list --service nova-compute
 An unexpected error prevented the server from fulfilling your request. (HTTP 500) (Request-ID: req-19037f15-bd4b-4404-987a-d55eeb6cbe57)
 ```
 
+### message6,  Too many connections
 /var/log/nova/nova-scheduler.log shows:  
 ```
 ERROR oslo_messaging.rpc.server [req-da6ea36d-a91d-465a-9307-336b7a77cff0 - - - - -] Exception during message handling: OperationalError: (pymysql.err.OperationalError) (1040, u'Too many connections') (Background on this error at: http://sqlalche.me/e/e3q8)
@@ -959,11 +963,9 @@ Populate the database:
 su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf  --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
 ......
 sqlalchemy.exc.ArgumentError: Could not parse rfc1738 URL from string ''
-
-Add the missing DB connection in /etc/neutron/neutron.conf , retry fine 
 ```
-
-Restart the Compute API service:
+Add the missing DB connection in /etc/neutron/neutron.conf , retry fine   
+Restart the Compute API service:  
 ```
 systemctl restart openstack-nova-api.service
 systemctl status openstack-nova-api.service
@@ -986,7 +988,7 @@ systemctl start neutron-l3-agent.service
 systemctl status neutron-l3-agent.service
 ```
 
-5.2) on compute node 
+5.2) on compute node    
 Install components 
 ```
 yum install openstack-neutron-linuxbridge ebtables ipset
@@ -1072,15 +1074,62 @@ openstack network agent list
 
 # 6, dashboard 
 6.1) install & configure   
-https://docs.openstack.org/horizon/rocky/install/install-rdo.html
+Install and configure dashboard on controller node, the only core service required by dashboard is identity service.   
 
-6.2) verify 
+6.1.1) install package 
+```
+yum install openstack-dashboard
+```
+6.1.2) config 
+```
+cd /etc/openstack-dashboard/
+cp local_settings local_settings.bak 
+vi local_settings 
+#Configure the dashboard to use OpenStack services on the controller node:
+OPENSTACK_HOST = "controller"
+#Allow your hosts to access the dashboard, could be [‘*’] to accept all hosts
+ALLOWED_HOSTS = ['one.example.com', 'two.example.com']
+#Configure the memcached session storage service:
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+CACHES = {
+    'default': {
+         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+         'LOCATION': 'controller:11211',
+    }
+}
+#Enable the Identity API version 3:
+OPENSTACK_KEYSTONE_URL = "http://%s:5000/v3" % OPENSTACK_HOST
+#Enable support for domains:
+OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True
+#Configure API versions:
+OPENSTACK_API_VERSIONS = {
+    "identity": 3,
+    "image": 2,
+    "volume": 2,
+}
+#Configure Default as the default domain for users that you create via the dashboard:
+OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = "Default"
+#Configure user as the default role for users that you create via the dashboard:
+OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"
+#configure the time zone:
+TIME_ZONE = "TIME_ZONE"
 
+#Add the following line to /etc/httpd/conf.d/openstack-dashboard.conf if not included.
+WSGIApplicationGroup %{GLOBAL}
+```
+6.1.3) finalize installation
+```
+systemctl restart httpd.service memcached.service
+systemctl status httpd.service 
+systemctl status  memcached.service
 
+```
+6.2) verify   
+http://controller/dashboard   
+Bad Request (400)     
 
-
-
-
-
-
+change ALLOWED_HOSTS to '*', now login page shows up.    
+domain = Default  
+user=admin   
+password=   
 
