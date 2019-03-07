@@ -5,11 +5,11 @@ category: Others
 tags: [others]
 ---
 
-Fork a repository
-Open it in GitHub Desktop, make changes
-Commit, 
-Publish 
-Waiting 15 minutes,  https://username.github.io/repositoryName is accessible 
+Fork a repository   
+Open it in GitHub Desktop, make changes   
+Commit,    
+Publish    
+Waiting 15 minutes,  https://username.github.io/repositoryName is accessible   
 
  
 ## Q & A   
