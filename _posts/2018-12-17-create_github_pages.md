@@ -5,7 +5,7 @@ category: Others
 tags: [others]
 ---
 
-Fork a repository   
+Fork a repository  / create a new empty repository, choose private or public 
 Open it in GitHub Desktop, make changes   
 Commit,    
 Publish    
