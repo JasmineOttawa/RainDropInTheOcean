@@ -6,7 +6,7 @@ tags: [Python]
 ---
 
 # preparation 1, top 10 python web framework
-  https://hackernoon.com/top-10-python-web-frameworks-to-learn-in-2018-b2ebab969d1a
+  https://hackernoon.com/top-10-python-web-frameworks-to-learn-in-2018-b2ebab969d1a   
   The top one is  Django + SQLite
 
 # preparation 2, create a ubuntu 16.04 VM on OpenStack environment , IP1
@@ -20,7 +20,7 @@ service ssh restart
 echo -e "rootpw\nrootpw" | passwd root
 ```
 
-#step1, install python
+# step1, install python
 after VM startup, it is python 3.5 automatically.  on CentOS7.5 default is 2.7.5. Installation is more smoothy on CentOS.   
 root@ubuntu1:~# python3
 Python 3.5.2 (default, Nov 17 2016, 17:05:23)
@@ -32,7 +32,7 @@ If not, it could be installed per https://docs.python-guide.org/starting/install
 apt-get update 
 apt-get install python3.6
 
-#step2, install pip
+# step2, install pip
 Installing pip will automatically install the latest version of setuptools. https://pip.pypa.io/en/latest/installing/
 ```
 root@ubuntu1:~# curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
@@ -44,7 +44,7 @@ root@ubuntu1:~# pip -V
 pip 19.0.3 from /usr/local/lib/python3.5/dist-packages/pip (python 3.5)
 ```
 
-#step3, install virtualenv 
+# step3, install virtualenv 
 virtualenv is a tool to create isolated Python environments. virtualenv creates a folder which contains all the necessary executables to use the packages that a Python project would need.
 ```
 https://docs.python-guide.org/dev/virtualenvs/#virtualenvironments-ref
@@ -57,7 +57,7 @@ root@ubuntu1:~# virtualenv --version
 15.0.1
 ```
 
-#step4, install django in virtualenv
+# step4, install django in virtualenv
 ```
 root@ubuntu1:/stage# apt-get update 
 root@ubuntu1:/stage# apt-get install python3-venv
@@ -80,7 +80,7 @@ You should consider upgrading via the 'pip install --upgrade pip' command.
 
 ```
 
-#step5, First project
+# step5, First project
 https://docs.djangoproject.com/en/2.1/intro/tutorial01/
 
 For first project, let's do some initial setup, auto-generate some code that established a Django project - a collection of settings for an instance of Django, including database configuration, Django-specific options and applications-specific settings.    
