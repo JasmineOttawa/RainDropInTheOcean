@@ -1,6 +1,6 @@
 ---
 layout: post
-title: try a app on Django web framework 
+title: Build a web application using Django web framework - part 1 
 category: Python
 tags: [Python]
 ---
@@ -21,13 +21,14 @@ echo -e "rootpw\nrootpw" | passwd root
 ```
 
 # step1, install python
-after VM startup, it is python 3.5 automatically.  on CentOS7.5 default is 2.7.5. Installation is more smoothy on CentOS.   
+after VM startup, it is python 3.5 automatically.  on CentOS7.5 default is 2.7.5. Installation is more smoothy on CentOS.
+```
 root@ubuntu1:~# python3
 Python 3.5.2 (default, Nov 17 2016, 17:05:23)
 [GCC 5.4.0 20160609] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>> exit()
-
+```
 If not, it could be installed per https://docs.python-guide.org/starting/installation/
 apt-get update 
 apt-get install python3.6
@@ -83,7 +84,7 @@ You should consider upgrading via the 'pip install --upgrade pip' command.
 # step5, First project
 https://docs.djangoproject.com/en/2.1/intro/tutorial01/
 
-For first project, let's do some initial setup, auto-generate some code that established a Django project - a collection of settings for an instance of Django, including database configuration, Django-specific options and applications-specific settings.    
+Take a look at Django instance, including database configuration, Django-specific options and applications-specific settings.    
 ```
 (djangodev) root@ubuntu1:/stage# django-admin startproject mysite
 (djangodev) root@ubuntu1:/stage# tree mysite
@@ -136,6 +137,80 @@ ALLOWED_HOSTS = ['IP1', 'localhost', '127.0.0.1']
 
 after changing settings.py, manage.py load the change automatiaclly.    
 "The install worked successfully! Congratulations!"   
+
+# step6, First App
+Projects vs. apps: An app is a Web application that does something – e.g., a Weblog system, a database of public records or a simple poll app. A project is a collection of configuration and apps for a particular website. A project can contain multiple apps. An app can be in multiple projects
+
+Create app right next to your manage.py file so that it can be imported as its own top-level module, rather than a submodule of mysite.  
+In the same directory as manage.py: 
+```
+(djangodev) root@ubuntu1:/stage# cd mysite
+(djangodev) root@ubuntu1:/stage/mysite# python manage.py startapp tinyurl
+(djangodev) root@ubuntu1:/stage/mysite# ls -ltr
+total 56
+-rwxr-xr-x 1 root root   538 Mar  9 02:38 manage.py
+drwxr-xr-x 3 root root  4096 Mar  9 03:08 mysite
+-rw-r--r-- 1 root root 40960 Mar  9 03:16 db.sqlite3
+drwxr-xr-x 3 root root  4096 Mar  9 12:00 tinyurl
+(djangodev) root@ubuntu1:/stage/mysite# tree tinyurl
+tinyurl
+    admin.py
+    apps.py
+    __init__.py
+    migrations
+       __init__.py
+    models.py
+    tests.py
+    views.py
+```
+First view: 
+```
+#polls/views.py
+from django.http import HttpResponse
+
+def index(request):
+    return HttpResponse("Hello, world. You're at the tinyurl index.")
+```
+
+To call the view, we need to map it to a URL - and for this we need a URLconf.  
+To create a URLconf in the tinyurl directory, create a file called urls.py. 
+```
+vi urls.py
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path('', views.index, name='index'),
+]
+```
+
+Point the root URLconf at the tinyurl.urls module. In mysite/urls.py, add an import for django.urls.include and insert an include() in the urlpatterns list, so you have:
+```
+#mysite/urls.py
+from django.contrib import admin
+from django.urls import include, path
+
+urlpatterns = [
+    path('tinyurl/', include('tinyurl.urls')),
+    path('admin/', admin.site.urls),
+]
+```
+
+The include() function allows referencing other URLconfs. Whenever Django encounters include(), it chops off whatever part of the URL matched up to that point and sends the remaining string to the included URLconf for further processing.  
+The idea behind include() is to make it easy to plug-and-play URLs. Since tinyurl are in their own URLconf (tinyurl/urls.py), they can be placed under “/tinyurl/”, or under “/fun_tinyurl/”, or under “/content/tinyurl/”, or any other path root, and the app will still work.  
+```
+python manage.py runserver  0:80
+http://10.12.5.107/tinyurl/
+"Hello, world. You're at the tinyurl index."
+```
+
+The path() function is passed four arguments, two required: route and view, and two optional: kwargs, and name   
+route - a string that contains a URL pattern. When processing a request, Django starts at the first pattern in urlpatterns and makes its way down the list, comparing the requested URL against each pattern until it finds one that matches.  
+Patterns don’t search GET and POST parameters, or the domain name. For example, in a request to https://www.example.com/myapp/, the URLconf will look for myapp/. In a request to https://www.example.com/myapp/?page=3, the URLconf will also look for myapp/.  
+view - When Django finds a matching pattern, it calls the specified view function with an HttpRequest object as the first argument and any “captured” values from the route as keyword arguments. We’ll give an example of this in a bit.  
+kwargs - Arbitrary keyword arguments can be passed in a dictionary to the target view   
+name - Naming your URL lets you refer to it unambiguously from elsewhere in Django, especially from within templates. This powerful feature allows you to make global changes to the URL patterns of your project while only touching a single file.  
 
 
 
