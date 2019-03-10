@@ -5,13 +5,6 @@ category: Python
 tags: [Python]
 ---
 
-part 1 - setup environment, create project, app
-part 2 - database, models, API
-part 3 -
-part 4 -
-part 5 -
-
-
 # step1. Database setup
 By default, the configuration uses SQLite.  view following parameters in mysite/settings.py   
 ```
@@ -47,7 +40,7 @@ sqlite> .quit
 (djangodev) root@ubuntu1:/stage/mysite#
 ```
 
-# step3. Creating models
+# step2. Creating models
 A model is the single, definitive source of truth about your data. It contains the essential fields and behaviors of the data you’re storing. Django follows the DRY Principle. The goal is to define your data model in one place and automatically derive things from it.    
 DRY - https://docs.djangoproject.com/en/2.1/misc/design-philosophies/#dry
 
@@ -58,17 +51,18 @@ from django.db import models
 class mapUEL(models.Model):
     sURL = models.CharField(max_length=6)
     lURL = models.CharField(max_length=512)
-	created = models.DateTimeField('date created')
+	  created = models.DateTimeField('date created')
 ```
-Each model is represented by a class that subclasses django.db.models.Model. Each model has a number of class variables, each of which represents a database field in the model.    
-Each field is represented by an instance of a Field class     
++ Each model is represented by a class that subclasses django.db.models.Model.
++ Each model has a number of class variables, each of which represents a database field in the model.    
++ Each field is represented by an instance of a Field class     
 
-# step4. Activating models
+# step3. Activating models
 models.py will enable Django to:   
 + Create a database schema (CREATE TABLE statements) for this app.   
 + Create a Python database-access API for accessing Question and Choice objects.   
 
-#Tell our project that the tinyapp is installed 
+**Tell our project that the tinyapp is installed**  
 Add a reference to configuration class in the INSTALLED_APPS setting. The TinyurlConfig class is in the tinyurl/apps.py file, so its dotted path is 'tinyurl.apps.TinyurlConfig'. 
 ```
 vi mysite/settings.py
@@ -137,7 +131,7 @@ The 3 steps to making model changes:
 2. Run python manage.py makemigrations to create migrations for those changes
 3. Run python manage.py migrate to apply those changes to the database.
 
-# step5. Playing with the API
+# step4. Playing with the API
 To invoke Python shell by "python manage.py shell", Because manage.py sets the DJANGO_SETTINGS_MODULE environment variable, which gives Django the Python import path to your mysite/settings.py file  
 Explore the database API:  
 ```
@@ -216,14 +210,14 @@ tinyurl.models.mapURL.DoesNotExist: mapURL matching query does not exist.
 True
 ```
 
-# step6. Introducing the Django Admin  
+# step5. Introducing the Django Admin  
 Generating admin sites for your staff or clients to add, change, and delete content is tedious work that doesn’t require much creativity. For that reason, Django entirely automates creation of admin interfaces for models.   
 Django was written in a newsroom environment, with a very clear separation between “content publishers” and the “public” site. Site managers use the system to add news stories, events, sports scores, etc., and that content is displayed on the public site. Django solves the problem of creating a unified interface for site administrators to edit content.  
 The admin isn’t intended to be used by site visitors. It’s for site managers.  
 
-Creating an admin user
-Start the development server
-Enter the admin site
-Make the poll app modifiable in the admin
-Explore the free admin functionality
++ Creating an admin user
++ Start the development server
++ Enter the admin site
++ Make the poll app modifiable in the admin
++ Explore the free admin functionality
 
