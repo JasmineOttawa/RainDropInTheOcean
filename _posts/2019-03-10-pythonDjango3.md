@@ -261,4 +261,5 @@ The DetailView generic view expects the primary key value captured from the URL 
 By default, the DetailView generic view uses a template called <app name>/<model name>_detail.html, it is overrided by template_name.     
 the ListView generic view uses a default template called <app name>/<model name>_list.html  
 
+
 further info regarding generic view:  https://docs.djangoproject.com/en/2.1/topics/class-based-views/ 
