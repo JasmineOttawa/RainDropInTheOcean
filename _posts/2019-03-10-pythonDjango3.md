@@ -11,7 +11,7 @@ views, reference  https://docs.djangoproject.com/en/2.1/intro/tutorial03/
 step1, Follow view has hard-coded design
 ```
 def index(request)
-    latest_question_list=Question.objects.order_by('-pub_date')[:5]
+  latest_question_list=Question.objects.order_by('-pub_date')[:5]
 	output=', '.join([q.question_text for q in latest_question_list])
 	return HttpResPonse(output)
 ```
@@ -99,4 +99,17 @@ Because that would couple the model layer to the view layer. One of the foremost
 ```
 In the example of {{ question.question_text }}, first Django does a dictionary lookup on the object question. Failing that, it tries an attribute lookup – which works, in this case. If attribute lookup had failed, it would’ve tried a list-index lookup.
 https://docs.djangoproject.com/en/2.1/topics/templates/
+
+# 4, removing hardcoded URLs in templates 
+in index.html, there is:
+```
+<li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>
+```
+The link is partially hardcoded. We can remove the reliance on specific URL paths defined in your URL by using the {% url %} template tag: 
+```
+<li><a href="{% url 'detail' question.id %}">{{ question.question_text }}</a></li>
+```
+As in urls.py, the detail path is defined as: path('<int:question_id>/', views.detail, name='detail'),   
+Now if you change the URL of the polls detail view to something else, like following, it will still work   
+path('specifics/<int:question_id>/', views.detail, name='detail'),
 
