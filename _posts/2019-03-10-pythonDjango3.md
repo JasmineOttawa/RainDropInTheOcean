@@ -4,7 +4,7 @@ title: Build a web application using Django web framework - part 3
 category: Python
 tags: [Python]
 ---
-views, reference  https://docs.djangoproject.com/en/2.1/intro/tutorial03/  
+[refer to]  https://docs.djangoproject.com/en/2.1/intro/tutorial03/  
 Using polls example to show concepts, some tags are conflicting with Liquid control flow tags, code with those tags are skipped here. 
 
 # 1, Evolve a view
@@ -57,7 +57,6 @@ The answer is to add namespace to your URLconf, add app_name=...  in urls.py
 + request.POST['choice'] raise KeyError if choice wasn't provided in POST data 
 + Always return an HttpResponseRedirect after successfully dealing with POST data. This prevents data from being posted twice if a user hits the Back button.
 + reverse(), helps avoid having to hardcode a URL in the view function. It is given the name of the view that we want to pass control to and the variable portion of the URL pattern that points to that view.
-+ request and response :  https://docs.djangoproject.com/en/2.1/ref/request-response/ 
 
 # 6, use generic views, less is better 
 detail and results views are redundant, they represent a common case of basic web development: getting data from the database according to a parameter passed in the URL, 
@@ -72,4 +71,5 @@ Two generic views are introduced here:
 Each generic view needs to know what model it will be acting upon.     
 The DetailView generic view expects the primary key value captured from the URL to be called "pk"
 
-further info regarding generic view:  https://docs.djangoproject.com/en/2.1/topics/class-based-views/ 
+[generic view] https://docs.djangoproject.com/en/2.1/topics/class-based-views/ 
+[request and response]  https://docs.djangoproject.com/en/2.1/ref/request-response/ 

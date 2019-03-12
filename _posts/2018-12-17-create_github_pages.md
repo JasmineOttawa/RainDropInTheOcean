@@ -61,5 +61,12 @@ git remote add origin  <REMOTE_URL>
 
 ### Q4 - markdown  
 Here is a good demo on how to use markdown  
-https://markdown-it.github.io/
+[markdown demo] https://markdown-it.github.io/
+
+### Q5, the tag ... is not a recognized Liquid tag. 
+   when submitting change, got message "The tag `url` on line 102 in `.....` is not a recognized Liquid tag."
+   This error will block subsequent changes, any change after this will not show up in web pages.
+
+   check out if there are any tags conflicting with Liquid tags, as Jekyll uses the Liquid templating language:      
+   [liquid tags] https://shopify.github.io/liquid/basics/introduction/#tags
 

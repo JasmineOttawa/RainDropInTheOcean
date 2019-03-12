@@ -6,7 +6,7 @@ tags: [Python]
 ---
 
 # preparation 1, top 10 python web framework
-  https://hackernoon.com/top-10-python-web-frameworks-to-learn-in-2018-b2ebab969d1a   
+  [python web framework] https://hackernoon.com/top-10-python-web-frameworks-to-learn-in-2018-b2ebab969d1a   
   The top one is  Django + SQLite
 
 # preparation 2, create a ubuntu 16.04 VM on OpenStack environment , IP1
@@ -119,10 +119,7 @@ http://IP1:8000/               # doesn't work from my laptop
 1st try : adding rule in security group for HTTP,     
 2 options for remote:  CIDR/security group, what is the difference?   
   
-try2 : change port:   
-python manage.py runserver 80   
-  
-try3: to listen on all available public IPs  
+try2: to listen on all available public IPs , this one works 
 python manage.py runserver 0:80  
   
 this time http://IP1:80 got response
