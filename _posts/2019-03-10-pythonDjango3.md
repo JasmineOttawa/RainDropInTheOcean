@@ -6,8 +6,7 @@ tags: [Python]
 ---
 views, reference  https://docs.djangoproject.com/en/2.1/intro/tutorial03/  
 
-Using polls example to show concepts, tags like {% %} are Liquid control flow tags, they are not recognized even if including them in code blocks ``` ```. The code with {% %} is skipped here.   
-
+Using polls example to show concepts, tags which conflicts with Liquid control flow tags will be skipped here. 
 
 # 1, Evolve a view
 step1, Follow is an index view, showing the latest 5 questions.  it has design hard-coded in view    
@@ -67,9 +66,9 @@ in index.html, there is:
 ```
 href="/polls/{{ question.id }}/"
 ```
-The link is partially hardcoded. We can remove the reliance on specific URL paths defined in your URL by using the {% url %} template tag: 
+The link is partially hardcoded. It could be removed by 
 ```
-href="{% url 'detail' question.id %}"
+href="X url 'detail' question.id X"
 ```
 As in urls.py, the detail path is defined as: path('<int:question_id>/', views.detail, name='detail'),      
 Now if you change the URL of the polls detail view to something else, like following, it will still work      
