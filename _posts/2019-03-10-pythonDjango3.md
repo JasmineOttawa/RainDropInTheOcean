@@ -76,7 +76,7 @@ path('specifics/<int:question_id>/', views.detail, name='detail')
 
 
 # 4, Namespacing URL names
-There might be other apps in same project that has a detail view, when using {% url %} tamplate tag, how does Django knows which app it is for? 
+There might be other apps in same project that has a detail view, when using X url X tamplate tag, how does Django knows which app it is for? 
 The answer is to add namespace to your URLconf, add app_name=... 
 ```
 #polls/urls.py
