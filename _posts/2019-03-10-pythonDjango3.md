@@ -5,38 +5,20 @@ category: Python
 tags: [Python]
 ---
 views, reference  https://docs.djangoproject.com/en/2.1/intro/tutorial03/  
-
-Using polls example to show concepts, tags which conflicts with Liquid control flow tags will be skipped here. 
+Using polls example to show concepts, tags conflicting with Liquid control flow tags are skipped. 
 
 # 1, Evolve a view
-step1, Follow is an index view, showing the latest 5 questions.  it has design hard-coded in view    
-```
-  latest_question_list=Question.objects.order_by('-pub_date')[:5]
-	output=', '.join([q.question_text for q in latest_question_list])
-	return HttpResPonse(output)
-```
-
-step2, Use template system to seperate form design from view      
-Create a template html file: polls/templates/polls/index.html
-
-In polls/views.py, loads the template called polls/index.html and passes it a context. The context is a dictionary mapping template variable names to Python objects.
+step1, Get latest 5 questions, put them in output, had design hard-coded in view
 ```
     latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    template = loader.get_template('polls/index.html')
-    context = {
-        'latest_question_list': latest_question_list,
-    }
-    return HttpResponse(template.render(context, request))
+    output = ', '.join([q.question_text for q in latest_question_list])
+    return HttpResponse(output)
 ```
-
-step3, a shortcut to load a template, fill a context and return an HttpResponse object with the rest of the rendered template. 
-The render() function takes the request object as its first argument, a template name as its second argument and a dictionary as its optional third argument. It returns an HttpResponse object of the given template rendered with the given context.
-```
-def index(request):
-    latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    context = {'latest_question_list': latest_question_list}
+step2, Use template system to seperate form design from view        
+    Create a template html file: polls/templates/polls/index.html  
+    return HttpResponse(template.render(context, request))  
+step3, a shortcut to load a template, fill a context and return an HttpResponse object with the rest of the rendered template.
     return render(request, 'polls/index.html', context)
-```
 
 # 2, Raising a 404 error 
 Look at the page that displays the question text for a given poll
@@ -62,31 +44,11 @@ Why do we use a helper function get_object_or_404() instead of automatically cat
 Because that would couple the model layer to the view layer. One of the foremost design goals of Django is to maintain loose coupling. Some controlled coupling is introduced in the django.shortcuts module.   
 
 # 3, removing hardcoded URLs in templates 
-in index.html, there is:
-```
-href="/polls/{{ question.id }}/"
-```
-The link is partially hardcoded. It could be removed by 
-```
-href="X url 'detail' question.id X"
-```
-As in urls.py, the detail path is defined as: path('<int:question_id>/', views.detail, name='detail'),      
-Now if you change the URL of the polls detail view to something else, like following, it will still work      
-path('specifics/<int:question_id>/', views.detail, name='detail')
 
 
 # 4, Namespacing URL names
 There might be other apps in same project that has a detail view, when using X url X tamplate tag, how does Django knows which app it is for? 
-The answer is to add namespace to your URLconf, add app_name=... 
-```
-#polls/urls.py
-app_name = 'polls'
-urlpatterns = [
-    path('', views.index, name='index'),
- ....
-]
-```
-In this way, detail view can be referenced by polls:detail 
+The answer is to add namespace to your URLconf, add app_name=...  in urls.py 
 
 # 5, write a simple form  
 + Form method=POST,  post will submit data to server side      
@@ -105,59 +67,10 @@ loading a template and returning the rendered template. It's so common, Django p
 + Delete some of the old, unneeded views 
 + Introduce new views based on Django's generic views 
 
-Convert the URLconf 
-```
-#polls/urls.py 
-from django.urls import path
-
-from . import views
-
-app_name = 'polls'
-urlpatterns = [
-    path('', views.IndexView.as_view(), name='index'),
-    path('<int:pk>/', views.DetailView.as_view(), name='detail'),
-    path('<int:pk>/results/', views.ResultsView.as_view(), name='results'),
-    path('<int:question_id>/vote/', views.vote, name='vote'),
-]
-```
-
-Delete some of the old, unneeded views 
-```
-#polls/views.py
-from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
-from django.urls import reverse
-from django.views import generic
-
-from .models import Choice, Question
-
-class IndexView(generic.ListView):
-    template_name = 'polls/index.html'
-    context_object_name = 'latest_question_list'
-
-    def get_queryset(self):
-        """Return the last five published questions."""
-        return Question.objects.order_by('-pub_date')[:5]
-
-class DetailView(generic.DetailView):
-    model = Question
-    template_name = 'polls/detail.html'
-
-class ResultsView(generic.DetailView):
-    model = Question
-    template_name = 'polls/results.html'
-
-def vote(request, question_id):
-    ... # same as above, no changes needed.
-```
-
-Two generic views are introduced here:   
-+ ListView - display a list of objects
-+ DetailView - display a detail page for a particular type of object 
-Each generic view needs to know what model it will be acting upon.   
-The DetailView generic view expects the primary key value captured from the URL to be called "pk"  
-By default, the DetailView generic view uses a template called <app name>/<model name>_detail.html, it is overrided by template_name.     
-the ListView generic view uses a default template called <app name>/<model name>_list.html  
-
+Two generic views are introduced here:    
++ ListView - display a list of objects  
++ DetailView - display a detail page for a particular type of object   
+Each generic view needs to know what model it will be acting upon.     
+The DetailView generic view expects the primary key value captured from the URL to be called "pk"    
 
 further info regarding generic view:  https://docs.djangoproject.com/en/2.1/topics/class-based-views/ 
