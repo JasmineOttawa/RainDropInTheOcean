@@ -5,7 +5,7 @@ category: Python
 tags: [Python]
 ---
 views, reference  https://docs.djangoproject.com/en/2.1/intro/tutorial03/  
-Using polls example to show concepts, tags conflicting with Liquid control flow tags are skipped. 
+Using polls example to show concepts, some tags are conflicting with Liquid control flow tags, code with those tags are skipped here. 
 
 # 1, Evolve a view
 step1, Get latest 5 questions, put them in output, had design hard-coded in view
@@ -45,7 +45,6 @@ Because that would couple the model layer to the view layer. One of the foremost
 
 # 3, removing hardcoded URLs in templates 
 
-
 # 4, Namespacing URL names
 There might be other apps in same project that has a detail view, when using X url X tamplate tag, how does Django knows which app it is for? 
 The answer is to add namespace to your URLconf, add app_name=...  in urls.py 
@@ -71,6 +70,6 @@ Two generic views are introduced here:
 + ListView - display a list of objects  
 + DetailView - display a detail page for a particular type of object   
 Each generic view needs to know what model it will be acting upon.     
-The DetailView generic view expects the primary key value captured from the URL to be called "pk"    
+The DetailView generic view expects the primary key value captured from the URL to be called "pk"
 
 further info regarding generic view:  https://docs.djangoproject.com/en/2.1/topics/class-based-views/ 
