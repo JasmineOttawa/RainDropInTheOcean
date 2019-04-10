@@ -82,7 +82,7 @@ cqlsh>
 
 # extend to a 3-node cluster 
 on each node:  
-Add IPs of other cassandra VMs to seed_provider/ -seeds settings: -seeds: "<current VM ip>, <other VM1>, <other VM2> ..."   
+Add IPs of other cassandra VMs to seed_provider/ -seeds settings: -seeds: "current_VM_IP, other_VM_IP1,other_VM_IP2 ..."   
 systemctl restart cassandra   
 ```
 [root@centos-1 conf]# nodetool status
@@ -166,6 +166,7 @@ scp * root@10.12.5.143:/stage/cert2
 scp * root@10.12.6.39:/stage/cert2
 ```
 step6. For node to node enryption modify server encyption options in /etc/cassandra/conf/cassandra.yaml
+```
 server_encryption_options:
     internode_encryption: all
     keystore: /stage/cert2/keystore.p12
@@ -178,10 +179,11 @@ server_encryption_options:
    store_type: PKCS12
    cipher_suites: [TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA]
    require_client_auth: true
-      
-step7. For client to node enryption modify client encyption options in /etc/cassandra/conf/cassandra.yaml:
+```
+   
+step7. For client to node enryption modify client encyption options in /etc/cassandra/conf/cassandra.yaml
+```
 client_encryption_options:
-
     enabled: true
     # If enabled and optional is set to true encrypted and unencrypted connections are handled.
     optional: false
@@ -196,18 +198,21 @@ client_encryption_options:
     # algorithm: SunX509
     # store_type: JKS
     # cipher_suites: [TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA]
-step8. If you have a uncommented line "JVM_OPTS="$JVM_OPTS -Djava.rmi.server.hostname=<address> inside /etc/cassandra/default.conf/cassandra-env.sh" comment it by # symbol.
+```
+	step8. If you have a uncommented line $JVM_OPTS -Djava.rmi.server.hostname=<address> inside /etc/cassandra/default.conf/cassandra-env.sh" comment it by # symbol.  
 note that /etc/cassandra/conf, /etc/alternatives/cassandra, /etc/cassandra/default.conf/ are same: 
+```
 [root@centos-1 cassandra]# ls -ltr
 total 4
 lrwxrwxrwx. 1 root root   27 Mar 21 20:01 conf -> /etc/alternatives/cassandra
 drwxr-xr-x. 3 root root 4096 Apr  8 15:53 default.conf
 [root@centos-1 cassandra]# ls -ltr /etc/alternatives/cassandra
 lrwxrwxrwx. 1 root root 29 Mar 21 20:01 /etc/alternatives/cassandra -> //etc/cassandra/default.conf/
-
+```
 step9. Restart cassandra service by "service cassandra restart"
 
 step10. Check that everything is ok by command: grep SSL var/log/cassandra/logs/system.log
+```
 [root@centos-3 conf]# grep SSL /var/log/cassandra/system.log
 INFO  [main] 2019-04-08 15:58:35,433 MessagingService.java:704 - Starting Encrypted Messaging Service on SSL port 7001
 
@@ -220,7 +225,8 @@ Caused by: java.io.IOException: DerInputStream.getLength(): lengthTag=109, too b
 
 compared config on 3 nodes, note that on centos3, it's: store_type: JKS
 while on centos1|2, it's: store_type: PKCS12, change it to JKS 
-		
+```
+	
 step11. To run java client with ssl security copy certificates from node to your laptop folder and use these parameters:
 -ea -Djavax.net.ssl.keyStore=c:\...\keystore.p12 -Djavax.net.ssl.keyStorePassword=cassandra -Djavax.net.ssl.trustStore=c:\...\truststore.p12 -Djavax.net.ssl.trustStorePassword=cassandra
 
