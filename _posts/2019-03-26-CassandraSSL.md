@@ -228,18 +228,25 @@ while on centos1|2, it's: store_type: PKCS12, change it to JKS
 ```
 	
 step11. To run java client with ssl security copy certificates from node to your laptop folder and use these parameters:
--ea -Djavax.net.ssl.keyStore=c:\...\keystore.p12 -Djavax.net.ssl.keyStorePassword=cassandra -Djavax.net.ssl.trustStore=c:\...\truststore.p12 -Djavax.net.ssl.trustStorePassword=cassandra
-
+```
+-ea -Djavax.net.ssl.keyStore=c:\...\keystore.p12 
+    -Djavax.net.ssl.keyStorePassword=cassandra 
+	-Djavax.net.ssl.trustStore=c:\...\truststore.p12 
+	-Djavax.net.ssl.trustStorePassword=cassandra
+```
 step12. Your builder shoud be used with "withSSL()" parameter.
+```
 Cluster cluster = Cluster.builder()
   .addContactPoint("node_address")
   .withSSL()
   .build();
+```
 step13. To use Create cqlshrc file inside ~/.cassandra folder wit this content:
+```
 [ssl]
 certfile = /stage/cert2/server.cer.pem
 validate = false ;; Optional, true by default. See the paragraph below. 
-
+```
 cqlsh IP --ssl -u raindrop -p raindrop 
  
  
