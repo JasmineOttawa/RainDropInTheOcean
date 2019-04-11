@@ -5,11 +5,11 @@ category: Cassandra
 tags: [Cassandra]
 ---
 Take a look at following topics:  
-+ setup a single node cassandra cluster 
-+ extend to a 3-node cluster 
-+ enable Cassandra authentication 
-+ enable SSL on cassandra 
-+ a SSL error troubleshooting 
++ setup a single node cassandra cluster  
++ extend to a 3-node cluster  
++ enable Cassandra authentication  
++ enable SSL on cassandra  
++ a SSL error troubleshooting  
 
 # setup a single node cassandra cluster 
 step1, make sure java, python are there
