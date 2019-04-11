@@ -199,7 +199,7 @@ client_encryption_options:
     # store_type: JKS
     # cipher_suites: [TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA]
 ```
-	step8. If you have a uncommented line $JVM_OPTS -Djava.rmi.server.hostname=<address> inside /etc/cassandra/default.conf/cassandra-env.sh" comment it by # symbol.  
+step8. comment out line $JVM_OPTS -Djava.rmi.server.hostname=... inside /etc/cassandra/default.conf/cassandra-env.sh        
 note that /etc/cassandra/conf, /etc/alternatives/cassandra, /etc/cassandra/default.conf/ are same: 
 ```
 [root@centos-1 cassandra]# ls -ltr
@@ -232,7 +232,7 @@ step11. To run java client with ssl security copy certificates from node to your
 
 step12. Your builder shoud be used with "withSSL()" parameter.
 Cluster cluster = Cluster.builder()
-  .addContactPoint("<node_address>")
+  .addContactPoint("node_address")
   .withSSL()
   .build();
 step13. To use Create cqlshrc file inside ~/.cassandra folder wit this content:
@@ -240,7 +240,7 @@ step13. To use Create cqlshrc file inside ~/.cassandra folder wit this content:
 certfile = /stage/cert2/server.cer.pem
 validate = false ;; Optional, true by default. See the paragraph below. 
 
-cqlsh <ip> --ssl -u raindrop -p raindrop 
+cqlsh IP --ssl -u raindrop -p raindrop 
  
  
 # an issue troubleshooting , keystore mismatch cause 1 node not communicating with the other two. 
