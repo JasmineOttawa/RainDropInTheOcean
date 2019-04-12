@@ -89,7 +89,7 @@ Seeing lots of zeros in the output for blocked tasks and dropped messages means 
 It was prior known as cfstats. It shows overview statistics for keyspace and tables.  
 It shows read and write latency and total number of reads and writes at the keyspace and table level. It also shows detailed information about Cassandra’s internal structures for each table, including memtables, Bloom filters and SSTables.
 ```
-[root@hybrid-cassandra-ncso-DC1-1-nft-marathon ~]# nodetool tablestats testkeyspace.test_table
+[root@centos-1 ~]# nodetool tablestats testkeyspace.test_table
 Total number of tables: 106
 ----------------
 Keyspace : testkeyspace
