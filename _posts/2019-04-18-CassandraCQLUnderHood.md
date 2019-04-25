@@ -185,15 +185,52 @@ RowKey: Tom Clancy
 At the storage layer, maps look very similar to lists, except the ordering ID is replaced by the map key  
 
 # Multi-Key Queries 
-
+SELECT * FROM authors WHERE name IN ( 'Tom Clancy', 'Malcolm Gladwell', 'Dean Koontz');  
+The keys are dispersed throughout the cluster, a QUORUM read requires consulting with at least two out of three replicas. The coordinator must then make requests to at least two replicas for each key in the query. The end result is that we required five out of six nodes to fulfill this query! If any one of these calls fails, the entire query will fail. It is easy to see how a query with many keys could require participation from every node in the cluster.  
+When using the IN clause, it’s best to keep the number of keys small. In fact, it is often advisable to issue multiple queries in parallel as opposed to utilizing the IN clause.   
 
 # Secondary Indices
+Secondary indices are the only type of index that Cassandra will manage for you, so the terms “index” and “secondary index” actually refer to the same mechanism. The purpose of an index is to allow query-by-value functionality, which is not supported naturally. This should be a clue as to the potential danger involved in relying on the index functionality. 
+```
+SELECT * FROM authors WHERE publisher = 'Putnam';
+Bad Request: No indexed columns present in by-columns clause with Equal operator
+CREATE INDEX author_publisher ON author (publisher);
+```
+Now we can filter on publisher, so our problems are solved, right? Not exactly! Let’s look closely at what Cassandra does to make this work.  
+At the storage layer, a secondary index is simply another column family, where the key is the value of the indexed column, and the columns contain the row keys of the indexed table.   
+So a query filtering on publisher will use the index to each author name, then query all the authors by key. This is similar to using the IN clause, since we must query replicas for every key with an entry in the index. But it’s actually even worse than the IN clause, because of a very important difference between indices and standard tables. Cassandra co-locates index entries with their associated original table keys.  
+It’s best to avoid using them in favor of writing your own indices or choosing another data model entirely.
+
 # Deleting Immutable Data 
-## Unexpected deletes
-## The Problem with Tombstones
-## Expiring columns 
-## How NOT to use TTLs
-## When Null Does Not Mean Empty
+Cassandra employs a log-structured storage engine, where all writes are immutable appends to the log. The implication is that data cannot actually be deleted at the time a DELETE statement is issued. Cassandra solves this by writing a marker, called a tombstone, with a timestamp greater than the previous value. This has the effect of overwriting the previous value with an empty one, which will then be compiled in subsequent queries for that column in the same manner as any other update. The actual value of the tombstone is set to the time of deletion, which is used to determine when the tombstone can be removed.  
+**Unexpected deletes**
+```
+DELETE FROM authors WHERE name = 'Tom Clancy' AND year = 1987 AND title = 'Patriot Games';
+tracing on 
+SELECT * FROM authors WHERE name = 'Tom Clancy' AND year = 1987 AND title = 'Patriot Games';
+Read 0 live and 3 tombstoned cells
+```
+Our query that returned zero records actually had to read three tombstones to produce the results! The important point to remember is that tombstones cover single storage layer columns, so deleting a CQL row with many columns results in many tombstones.  
+
+**The Problem with Tombstones**
+When a query requires reading tombstones, Cassandra must perform many additional reads to return your results. A query for a key in an sstable that has only tombstones associated with it will still pass through the bloom filter, because the system must reconcile tombstones with other replicas. Since the bloom filter is designed to prevent unnecessary reads for missing data, this means Cassandra will perform extra reads after data has been deleted.  
+**Expiring columns** 
+Cassandra offers us a handy feature for purging old data through setting an expiration time in seconds, called a TTL, at the column level. An expired column results in a tombstone as in any other form of delete.  
+```
+INSERT INTO authors (name, title) VALUES ('Tom Clancy', 'Patriot Games')USING TTL 86400;
+UPDATE authors USING TTL 86400 SET publisher = 'Putnam' WHERE name = 'Tom Clancy' AND title = 'Patriot Games' AND year = 1987;
+``` 
+**How NOT to use TTLs**
+Expiring columns can be highly useful in time-series data. Make sure your usage pattern avoids reading excessive numbers of tombstones. Often you can use range filters to accomplish this goal.  
+
+**When Null Does Not Mean Empty**
+Cassandra stores columns sparsely, meaning that unspecified values simply aren’t written. So it would seem logical that setting a column to null would result in a missing column. In fact, writing a null is the same thing as explicitly deleting a column, and therefore a tombstone is written for that column!   
+While Cassandra supports separate INSERT and UPDATE statements, all writes are fundamentally the same under the covers. And because all writes are simply append operations, there is no way for the system to know whether a previous value exists for the column. Therefore Cassandra must actually write a tombstone in order to guarantee any old values are deleted.  
+Imagine a data model that includes many sparsely populated columns. It is tempting to create a single prepared statement with all potential columns, then set the unused columns tonull. It is also possible that callers of an insert method might pass in null values. If this condition is not checked, it is easy to see how tombstones could be accumulated without realizing this is happening.  
+Note that in RDBMS, delete is at row level; in Cassandra, delete is at column level!! 
+
+
+
 
 
 
