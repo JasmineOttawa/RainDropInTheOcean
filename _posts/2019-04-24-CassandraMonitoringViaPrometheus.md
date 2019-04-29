@@ -18,9 +18,7 @@ Restart Cassandra
 
 # on monitoring VM   
 step1, Install Prometheus  
-wget https://github.com/prometheus/prometheus/releases/download/v2.3.1/prometheus-2.3.1.linux-amd64.tar.gz
-tar xvfz prometheus-*.tar.gz
-cd prometheus-*
+apt install prometheus 
 
 step2, Configure Prometheus  
 vi /etc/prometheus/prometheus.yaml
@@ -31,10 +29,18 @@ scrape_configs:
 # Cassandra config
   - job_name: 'cassandra'
     scrape_interval: 15s
-    static_configs:
+    target_groups:
       - targets: ['cassandra01:7070', 'cassandra02:7070', 'cassandra03:7070']
 
-step3, Install Grafana  
+Step3. Create storage and start Prometheus
+cd /etc/prometheus
+mkdir data
+chown prometheus:prometheus data
+prometheus --config.file=/stage/prometheus-2.3.1.linux-amd64/prometheus.yml
+http://IP:9090 
+
+	  
+step4, Install Grafana  
 wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana_5.1.4_amd64.deb
 sudo apt-get install -y adduser libfontconfig
 sudo dpkg -i grafana_5.1.4_amd64.deb
@@ -42,11 +48,22 @@ sudo service grafana-server start
 
 # on Cassandra VMs  
 step1, Download prometheus JMX-Exporter  
-mkdir /opt/jmx_prometheus
+mkdir /opt/jmx_prometheus;cd /opt/jmx_prometheus;
 wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.3.0/jmx_prometheus_javaagent-0.3.0.jar
 
 step2, Configure JMX-Exporter  
 $ vi /opt/jmx_prometheus/cassandra.yml
+use the sample config file here, monitor all metrics 
+https://github.com/prometheus/jmx_exporter/blob/master/example_configs/cassandra.yml
+
+step3, Configure Cassandra  
+echo 'JVM_OPTS="$JVM_OPTS -javaagent:/opt/jmx_prometheus/jmx_prometheus_javaagent-0.3.0.jar=7070:/opt/jmx_prometheus/cassandra.yml"' &amp;gt;&amp;gt; conf/cassandra-env.sh
+
+step4, Restart Cassandra  
+systemctl restart dse 
+
+-- another sample config file  /opt/jmx_prometheus/cassandra.yml  
+```
 lowercaseOutputName: true
 lowercaseOutputLabelNames: true
 whitelistObjectNames: [
@@ -124,28 +141,23 @@ rules:
     labels:
       "$1": "$4"
       "$2": "$3"
-step3, Configure Cassandra  
-echo 'JVM_OPTS="$JVM_OPTS -javaagent:/opt/prometheus-exporter/jmx_prometheus_javaagent-0.3.0.jar=7070:/opt/prometheus-exporter/cassandra.yaml"' &amp;gt;&amp;gt; conf/cassandra-env.sh
-
-step4, Restart Cassandra  
-nodetool flush
-nodetool drain
-sudo service cassandra restart
+```
+Restart prometheus, to reload updated cassandra.yaml   
+The output is pretty undiscriminating, how to highlight/set waring threshold on specific metrics?   
 
 # in kubernetes 
-[root@kubernetes-master1-nfv-lab-qa-nft-sizing-28122-22-04-2019 etc]# kubectl get services -n common | grep prometheus
-common-prometheus-alertmanager         ClusterIP   10.43.186.217   <none>        80/TCP           2d
-common-prometheus-kube-state-metrics   ClusterIP   None            <none>        80/TCP           2d
-common-prometheus-node-exporter        ClusterIP   None            <none>        9100/TCP         2d
-common-prometheus-pushgateway          NodePort    10.43.177.43    <none>        9091:30714/TCP   2d
-common-prometheus-server               ClusterIP   10.43.175.37    <none>        80/TCP           2d
+[root@masternode]# kubectl get services -n common | grep prometheus
+common-prometheus-alertmanager         ClusterIP   10.43.186.217   &amp;lt;none&amp;gt;        80/TCP           2d
+common-prometheus-kube-state-metrics   ClusterIP   None            &amp;lt;none&amp;gt;        80/TCP           2d
+common-prometheus-node-exporter        ClusterIP   None            &amp;lt;none&amp;gt;        9100/TCP         2d
+common-prometheus-pushgateway          NodePort    10.43.177.43    &amp;lt;none&amp;gt;        9091:30714/TCP   2d
+common-prometheus-server               ClusterIP   10.43.175.37    &amp;lt;none&amp;gt;        80/TCP           2d
 
 http://10.43.177.43:9091 
 http://10.43.177.43:30714 
 curl http://localhost:30714 
 curl http://127.0.0.1:30714  works 
 curl http://10.247.136.75:30714 works 
-
 Image:         prom/prometheus:v2.3.2
 
 
